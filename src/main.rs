@@ -1,14 +1,14 @@
 use std::ops::Deref;
 
 use rocket::form::{Form, FromForm};
-use rocket::http::Status;
+use rocket::http::{impl_from_uri_param_identity, Status};
 use rocket::request::{FromRequest, Outcome};
 use rocket::response::content::RawJson;
 use rocket::response::status::Custom;
 use rocket::serde::json::serde_json::json;
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket::{post, routes, Request};
-use slackwesend::wkw_action_handler::SlackActionPayload;
+use slackwesend::wkw_action_handler::{Actions, Block, Button, Header, SlackActionPayload, Text};
 use slackwesend::wkw_command::SlackCommandBody;
 use tokio::task::spawn_blocking;
 use tracing::{error, info};
@@ -46,6 +46,29 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
     let response_txt = format!("{:?}", data);
     info!("{:?}", response_txt);
 
+    let _blocks: Vec<Block> = vec![
+        Block::Header(Header {
+            text: Text {
+                r#type: "plain_text".to_string(),
+                text: "Ich komme am:".to_string(),
+                emoji: true,
+            },
+        }),
+        Block::Actions(Actions {
+            elements: vec![Button {
+                text: Text {
+                    r#type: "plain_text".to_string(),
+                    text: "😩 MO".to_string(),
+                    emoji: true,
+                },
+                value: "Montag".to_string(),
+                action_id: "monday".to_string(),
+                block_id: None,
+                action_ts: None,
+            }],
+        }),
+    ];
+
     RawJson(json!(
     {
     "response_type": "in_channel",
@@ -68,7 +91,7 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
                         "text": "😩 MO",
                         "emoji": true
                     },
-                    "value": "monday",
+                    "value": "Montag",
                     "action_id": "monday"
                 },
                 {
@@ -78,7 +101,7 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
                         "text": "🫡 DI",
                         "emoji": true
                     },
-                    "value": "tuesday",
+                    "value": "Dienstag",
                     "action_id": "tuesday"
                 },
                 {
@@ -88,7 +111,7 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
                         "text": "⛰️ MI",
                         "emoji": true
                     },
-                    "value": "wednesday",
+                    "value": "Mittwoch",
                     "action_id": "wednesday"
                 },
                 {
@@ -98,7 +121,7 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
                         "text": "🍻 DO",
                         "emoji": true
                     },
-                    "value": "thursday",
+                    "value": "Donnerstag",
                     "action_id": "thursday"
                 },
                 {
@@ -108,7 +131,7 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
                         "text": "🍾 FR",
                         "emoji": true
                     },
-                    "value": "friday",
+                    "value": "Freitag",
                     "action_id": "friday"
                 }
             ]

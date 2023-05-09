@@ -32,7 +32,7 @@ pub struct User {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Container {
-    pub r#type: Option<String>,
+    pub r#type: String,
     pub message_ts: String,
     pub channel_id: String,
     pub is_ephemeral: bool,
@@ -103,7 +103,7 @@ pub struct Context {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Button {
-    pub r#type: Option<String>,
+    pub r#type: String,
     pub text: Text,
     pub value: String,
     pub action_id: String,
@@ -114,7 +114,7 @@ pub struct Button {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Text {
-    pub r#type: Option<String>,
+    pub r#type: String,
     pub text: String,
     pub emoji: bool,
 }
