@@ -1,15 +1,23 @@
 use std::ops::Deref;
 
 use rocket::form::{Form, FromForm};
+use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome};
 use rocket::response::content::RawJson;
+use rocket::response::status::Custom;
 use rocket::serde::json::serde_json::json;
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket::{post, routes, Request};
 use tokio::task::spawn_blocking;
-use tracing::info;
+use tracing::{error, info};
 
 struct Headers(String);
+
+#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+struct ActionEndpoint {
+    payload: String,
+}
 
 #[derive(Debug, FromForm, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -263,24 +271,33 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
             ))
 }
 
-#[post("/<_..>", data = "<body>")]
-async fn catch_all(headers: Headers, body: Form<SlackPayload>) -> String {
+#[post("/<_..>", data = "<payload>")]
+async fn catch_all(headers: Headers, payload: Form<String>) -> Custom<String> {
     info!("catch all called");
-    let response_txt = format!("{}\nBody:\n\n{:?}", headers.clone(), &body);
-    spawn_blocking(move || {
-        let json_value = json!(
-            {
-                "text": "Thanks for your request, we'll process it and get back to you."
-            }
-        );
-
-        info!("sending reply to {}", &body.response_url);
-
-        let client = reqwest::blocking::Client::new();
-        client.post(&body.response_url).json(&json_value).send()
-    });
+    let response_txt = format!("{}\nBody:\n\n{:?}", headers.clone(), &payload);
     info!("{}", response_txt);
-    "OK".to_string()
+
+    match json::from_str(&payload) {
+        Ok(SlackPayload { response_url, .. }) => {
+            spawn_blocking(move || {
+                let json_value = json!(
+                    {
+                        "text": "Thanks for your request, we'll process it and get back to you."
+                    }
+                );
+
+                info!("sending reply to {}", response_url);
+
+                let client = reqwest::blocking::Client::new();
+                client.post(response_url).json(&json_value).send()
+            });
+            Custom(Status::Ok, "OK".to_string())
+        }
+        Err(e) => {
+            error!("error interpreting action request: {}", e);
+            Custom(Status::BadRequest, e.to_string())
+        }
+    }
 }
 
 #[shuttle_runtime::main]
