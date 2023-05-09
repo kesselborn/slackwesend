@@ -8,11 +8,11 @@ publish = false
 
 [dependencies]
 tide = "0.16"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 async-std = "1.12.0"
 shuttle-runtime = "0.15.0"
-rocket = "0.5.0-rc.3"
+rocket = { version ="0.5.0-rc.3", features = ["json"]}
 shuttle-rocket = "0.15.0"
 tokio = "1.28.0"
+tracing = "0.1.37"
+reqwest = { version = "0.11.17", features = ["json", "blocking"] }
 
