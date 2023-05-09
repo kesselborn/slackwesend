@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use rocket::form::{Form, FromForm};
-use rocket::http::{impl_from_uri_param_identity, Status};
+use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome};
 use rocket::response::content::RawJson;
 use rocket::response::status::Custom;
@@ -49,7 +49,6 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
     let _blocks: Vec<Block> = vec![
         Block::Header(Header {
             text: Text {
-                r#type: "plain_text".to_string(),
                 text: "Ich komme am:".to_string(),
                 emoji: true,
             },
@@ -57,7 +56,6 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
         Block::Actions(Actions {
             elements: vec![Button {
                 text: Text {
-                    r#type: "plain_text".to_string(),
                     text: "😩 MO".to_string(),
                     emoji: true,
                 },
@@ -201,13 +199,17 @@ async fn catch_all(headers: Headers, payload: Form<String>) -> Custom<String> {
     info!("{}", response_txt);
 
     match json::from_str(&payload) {
-        Ok(SlackActionPayload {
-            response_url,
-            message,
-            user,
-            actions,
-            ..
-        }) => {
+        Ok(payload) => {
+            info!("payload:\n{:?}", json::to_string(&payload).unwrap());
+
+            let SlackActionPayload {
+                user,
+                response_url,
+                message,
+                actions,
+                ..
+            } = payload;
+
             spawn_blocking(move || {
                 let json_value = json!(
                     {

@@ -3,8 +3,9 @@ use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
+#[serde(tag = "type")]
+#[serde(rename = "block_actions")]
 pub struct SlackActionPayload {
-    pub r#type: String,
     pub user: User,
     pub api_app_id: String,
     pub token: String,
@@ -31,8 +32,9 @@ pub struct User {
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
+#[serde(tag = "type")]
+#[serde(rename = "message")]
 pub struct Container {
-    pub r#type: String,
     pub message_ts: String,
     pub channel_id: String,
     pub is_ephemeral: bool,
@@ -54,8 +56,9 @@ pub struct Channel {
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
+#[serde(tag = "type")]
+#[serde(rename = "message")]
 pub struct Message {
-    pub r#type: String,
     pub subtype: String,
     pub text: String,
     pub ts: String,
@@ -97,32 +100,37 @@ pub struct Divider {}
 #[serde(crate = "rocket::serde")]
 pub struct Context {
     pub block_id: String,
-    pub elements: Vec<ContextElement>,
+    pub elements: Vec<MarkdownText>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
+#[serde(tag = "type")]
+#[serde(rename = "button")]
 pub struct Button {
-    pub r#type: String,
     pub text: Text,
     pub value: String,
     pub action_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub block_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub action_ts: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
+#[serde(tag = "type")]
+#[serde(rename = "plain_text")]
 pub struct Text {
-    pub r#type: String,
     pub text: String,
     pub emoji: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
-pub struct ContextElement {
-    pub r#type: String,
+#[serde(tag = "type")]
+#[serde(rename = "mrkdwn")]
+pub struct MarkdownText {
     pub text: String,
 }
 
