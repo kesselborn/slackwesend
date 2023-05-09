@@ -19,7 +19,7 @@ struct ActionEndpoint {
     payload: String,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct User {
     id: String,
@@ -28,7 +28,7 @@ struct User {
     team_id: String,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Container {
     r#type: String,
@@ -37,14 +37,14 @@ struct Container {
     is_ephemeral: bool,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Team {
     id: String,
     domain: String,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Message {
     r#type: String,
@@ -55,7 +55,7 @@ struct Message {
     blocks: Vec<Block>,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Header {
     r#type: String,
@@ -63,7 +63,7 @@ struct Header {
     text: PlainText,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Button {
     r#type: String,
@@ -72,7 +72,7 @@ struct Button {
     value: String,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Actions {
     r#type: String,
@@ -80,7 +80,7 @@ struct Actions {
     elements: Vec<Button>,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Block {
     r#type: String,
@@ -89,7 +89,7 @@ struct Block {
     elements: Option<Vec<Button>>,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Action {
     action_id: String,
@@ -100,7 +100,7 @@ struct Action {
     action_ts: String,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct PlainText {
     r#type: String,
@@ -108,10 +108,9 @@ struct PlainText {
     emoji: bool,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct SlackPayload {
-    #[field(validate = one_of("block_actions".chars()))]
     r#type: String,
     user: User,
     api_app_id: String,
@@ -127,7 +126,7 @@ struct SlackPayload {
     actions: Vec<Action>,
 }
 
-#[derive(Debug, FromForm, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 struct Channel {
     id: String,
@@ -207,64 +206,74 @@ async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": "Ich komme am: ",
+                "text": "W K W -- Wer kommt Wann?",
                 "emoji": true
             }
         },
         {
-          "type": "actions",
-          "elements": [
-            {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "MO",
-                "emoji": true
-              },
-              "value": "monday",
-              "action_id": "monday"
-            },
-            {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "DI",
-                "emoji": true
-              },
-              "value": "tuesday",
-              "action_id": "tuesday"
-            },
-            {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "MI",
-                "emoji": true
-              },
-              "value": "wednesday",
-              "action_id": "wednesday"
-            },
-            {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "DO",
-                "emoji": true
-              },
-              "value": "thursday",
-              "action_id": "thursday"
-            },
-            {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "FR",
-                "emoji": true
-              },
-              "value": "friday",
-              "action_id": "friday"
-            }
-          ]
+            "type": "context",
+            "elements": [
+                {
+                    "type": "plain_text",
+                    "text": "Jetzt schnell eintragen und mit etwas Glück schon morgen 1000€ auf der Straße finden!",
+                    "emoji": true
+                }
+            ]
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "😩 MO",
+                        "emoji": true
+                    },
+                    "value": "Montag",
+                    "action_id": "monday"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🫡 DI",
+                        "emoji": true
+                    },
+                    "value": "Dienstag",
+                    "action_id": "tuesday"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "⛰️ MI",
+                        "emoji": true
+                    },
+                    "value": "Mittwoch",
+                    "action_id": "wednesday"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🍻 DO",
+                        "emoji": true
+                    },
+                    "value": "Donnerstag",
+                    "action_id": "thursday"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🍾 FR",
+                        "emoji": true
+                    },
+                    "value": "Freitag",
+                    "action_id": "friday"
+                }
+            ]
         }
       ]
     }
@@ -278,18 +287,34 @@ async fn catch_all(headers: Headers, payload: Form<String>) -> Custom<String> {
     info!("{}", response_txt);
 
     match json::from_str(&payload) {
-        Ok(SlackPayload { response_url, .. }) => {
+        Ok(SlackPayload {
+            response_url,
+            message,
+            user,
+            actions,
+            ..
+        }) => {
             spawn_blocking(move || {
                 let json_value = json!(
                     {
-                        "text": "Thanks for your request, we'll process it and get back to you."
+                        "response_type": "in_channel",
+                        "replace_original": false,
+                        "thread_ts": message.ts,
+                        "text": format!("Ha! <@{}> kommt {} ins Büro", user.username, actions[0].value)
                     }
                 );
 
-                info!("sending reply to {}", response_url);
-
+                info!("sending {} reply to {}", &json_value, response_url);
                 let client = reqwest::blocking::Client::new();
-                client.post(response_url).json(&json_value).send()
+                let _ = client.post(&response_url).json(&json_value).send();
+                let json_value = json!(
+                    {
+                        "response_type": "ephemeral",
+                        "replace_original": false,
+                        "text": format!("Mega, dass du am {} kommst 🥰", actions[0].value)
+                    }
+                );
+                let _ = client.post(&response_url).json(&json_value).send();
             });
             Custom(Status::Ok, "OK".to_string())
         }
