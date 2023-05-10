@@ -6,9 +6,12 @@ use rocket::request::{FromRequest, Outcome};
 use rocket::response::content::RawJson;
 use rocket::response::status::Custom;
 use rocket::serde::json::serde_json::json;
+use rocket::serde::json::Json;
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket::{post, routes, Request};
-use slackwesend::wkw_action_handler::{Actions, Block, Button, Header, SlackActionPayload, Text};
+use slackwesend::wkw_action_handler::{
+    Actions, Block, Button, Context, Divider, Header, MarkdownText, SlackActionPayload, Text,
+};
 use slackwesend::wkw_command::SlackCommandBody;
 use tokio::task::spawn_blocking;
 use tracing::{error, info};
@@ -41,155 +44,116 @@ impl<'r> FromRequest<'r> for Headers {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+#[serde(tag = "response_type")]
+#[serde(rename = "in_channel")]
+struct SlackCommandResponse {
+    blocks: Vec<Block>,
+}
+
 #[post("/init", data = "<data>")]
-async fn init(data: Form<SlackCommandBody>) -> RawJson<json::Value> {
+async fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
     let response_txt = format!("{:?}", data);
     info!("{:?}", response_txt);
 
-    let _blocks: Vec<Block> = vec![
-        Block::Header(Header {
-            text: Text {
-                text: "Ich komme am:".to_string(),
-                emoji: true,
-            },
-        }),
-        Block::Actions(Actions {
-            elements: vec![Button {
+    let response = SlackCommandResponse {
+        blocks: vec![
+            Block::Header(Header {
                 text: Text {
-                    text: "😩 MO".to_string(),
+                    text: "Ich komme am:".to_string(),
                     emoji: true,
                 },
-                value: "Montag".to_string(),
-                action_id: "monday".to_string(),
-                block_id: None,
-                action_ts: None,
-            }],
-        }),
-    ];
+            }),
+            Block::Actions(Actions {
+                elements: vec![
+                    Button {
+                        text: Text {
+                            text: "😩 MO".to_string(),
+                            emoji: true,
+                        },
+                        value: "Montag".to_string(),
+                        action_id: "monday".to_string(),
+                        block_id: None,
+                        action_ts: None,
+                    },
+                    Button {
+                        text: Text {
+                            text: "🫡 DI".to_string(),
+                            emoji: true,
+                        },
+                        value: "Dienstag".to_string(),
+                        action_id: "tuesday".to_string(),
+                        block_id: None,
+                        action_ts: None,
+                    },
+                    Button {
+                        text: Text {
+                            text: "⛰️ MI".to_string(),
+                            emoji: true,
+                        },
+                        value: "Mittwoch".to_string(),
+                        action_id: "wednesday".to_string(),
+                        block_id: None,
+                        action_ts: None,
+                    },
+                    Button {
+                        text: Text {
+                            text: "🍻 DO".to_string(),
+                            emoji: true,
+                        },
+                        value: "Donnerstag".to_string(),
+                        action_id: "thursday".to_string(),
+                        block_id: None,
+                        action_ts: None,
+                    },
+                    Button {
+                        text: Text {
+                            text: "🍾 FR".to_string(),
+                            emoji: true,
+                        },
+                        value: "Freitag".to_string(),
+                        action_id: "friday".to_string(),
+                        block_id: None,
+                        action_ts: None,
+                    },
+                ],
+            }),
+            Block::Divider(Divider {}),
+            Block::Context(Context {
+                block_id: "Montag".to_string(),
+                elements: vec![MarkdownText {
+                    text: "*Montag*: ".to_string(),
+                }],
+            }),
+            Block::Context(Context {
+                block_id: "Dienstag".to_string(),
+                elements: vec![MarkdownText {
+                    text: "*Dienstag*: ".to_string(),
+                }],
+            }),
+            Block::Context(Context {
+                block_id: "Mittwoch".to_string(),
+                elements: vec![MarkdownText {
+                    text: "*Mittwoch*: ".to_string(),
+                }],
+            }),
+            Block::Context(Context {
+                block_id: "Donnerstag".to_string(),
+                elements: vec![MarkdownText {
+                    text: "*Donnerstag*: ".to_string(),
+                }],
+            }),
+            Block::Context(Context {
+                block_id: "Freitag".to_string(),
+                elements: vec![MarkdownText {
+                    text: "*Freitag*: ".to_string(),
+                }],
+            }),
+        ],
+    };
 
-    RawJson(json!(
-    {
-    "response_type": "in_channel",
-    "blocks": [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "Ich komme am: ",
-                "emoji": true
-            }
-        },
-        {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "😩 MO",
-                        "emoji": true
-                    },
-                    "value": "Montag",
-                    "action_id": "monday"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "🫡 DI",
-                        "emoji": true
-                    },
-                    "value": "Dienstag",
-                    "action_id": "tuesday"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "⛰️ MI",
-                        "emoji": true
-                    },
-                    "value": "Mittwoch",
-                    "action_id": "wednesday"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "🍻 DO",
-                        "emoji": true
-                    },
-                    "value": "Donnerstag",
-                    "action_id": "thursday"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "🍾 FR",
-                        "emoji": true
-                    },
-                    "value": "Freitag",
-                    "action_id": "friday"
-                }
-            ]
-        },
-        {
-            "type": "divider"
-        },
-        {
-            "type": "context",
-            "block_id": "monday-presence",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Montag*: "
-                }
-            ]
-        },
-        {
-            "type": "context",
-            "block_id": "tuesday-presence",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Dienstag*: "
-                }
-            ]
-        },
-        {
-            "type": "context",
-            "block_id": "wednesday-presence",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Mittwoch*: "
-                }
-            ]
-        },
-        {
-            "type": "context",
-            "block_id": "thursday-presence",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Donnerstag*: "
-                }
-            ]
-        },
-        {
-            "type": "context",
-            "block_id": "friday-presence",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Freitag*: "
-                }
-            ]
-        }
-    ]
-    }
-            ))
+    Json(response)
 }
 
 #[post("/<_..>", data = "<payload>")]
