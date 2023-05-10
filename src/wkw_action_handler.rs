@@ -1,3 +1,4 @@
+use regex::Regex;
 use rocket::serde::json::serde_json;
 use rocket::serde::{Deserialize, Serialize};
 
@@ -136,7 +137,7 @@ impl Button {
                 emoji: true,
             },
             value: value.to_string(),
-            action_id: value.to_lowercase().to_string(),
+            action_id: format!("presence-{}", value.to_lowercase().to_string()),
             block_id: None,
             action_ts: None,
         }
@@ -161,13 +162,25 @@ pub struct MarkdownText {
 }
 
 impl MarkdownText {
-    pub fn new(markdown_text: &str, id: &str) -> Context {
+    pub fn new_context(markdown_elements: Vec<&str>, id: &str) -> Context {
+        let markdown_elements = markdown_elements
+            .iter()
+            .map(|text| MarkdownText {
+                text: text.to_string(),
+            })
+            .collect();
+
         Context {
-            elements: vec![MarkdownText {
-                text: markdown_text.to_string(),
-            }],
+            elements: markdown_elements,
             block_id: id.to_string(),
         }
+    }
+
+    pub fn extract_usernames(&self) -> Vec<&str> {
+        let re = Regex::new(r#"<@(\w+?)>"#).unwrap();
+        re.captures_iter(&self.text)
+            .map(|cap| cap.get(1).unwrap().as_str())
+            .collect()
     }
 }
 
@@ -175,4 +188,50 @@ impl MarkdownText {
 #[serde(crate = "rocket::serde")]
 pub struct State {
     pub values: serde_json::Value,
+}
+
+struct Blocks(Vec<Block>);
+
+impl Blocks {
+    fn find_context(&mut self, name: &str) -> Option<&mut Context> {
+        for block in &mut self.0 {
+            if let Block::Context(ref mut context) = block {
+                if context.block_id == name {
+                    return Some(context);
+                }
+            }
+        }
+        None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::wkw_command::SlackCommandResponse;
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_extract_usernames() {
+        let Context { elements, .. } =
+            MarkdownText::new_context(vec!["*Monday*:", "foo <@bar>, <@baz>, bang"], "foo");
+
+        assert_eq!(elements[1].extract_usernames(), vec!["bar", "baz"]);
+        assert_eq!(elements[1].extract_usernames().contains(&"bar"), true);
+    }
+
+    #[test]
+    fn find_correct_markdown_element() {
+        let SlackCommandResponse { blocks } = SlackCommandResponse::default();
+        let mut blocks = Blocks(blocks);
+        let mut presence_mittwoch_context = blocks.find_context("presence-mittwoch");
+
+        if let Some(context) = &presence_mittwoch_context {
+            let mut xxx = context.elements[1];
+            xxx.text = "boom".to_string();
+        }
+
+        println!("{:?}", presence_mittwoch_context);
+        assert!(presence_mittwoch_context.is_some())
+    }
 }

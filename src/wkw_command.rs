@@ -1,5 +1,6 @@
+use crate::wkw_action_handler::{Actions, Block, Button, Divider, Header, MarkdownText};
+use rocket::serde::{Deserialize, Serialize};
 use rocket::FromForm;
-use rocket::serde::Serialize;
 
 #[derive(Clone, Debug, FromForm, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -33,4 +34,55 @@ pub struct SlackCommandBody {
     enterprise_id: Option<String>,
     // The name of the Slack Enterprise Grid where the user triggered the command (only included for Enterprise Grid workspaces)
     enterprise_name: Option<String>,
+}
+
+// fn get_initial_block_kit() -> {}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+#[serde(tag = "response_type")]
+#[serde(rename = "in_channel")]
+pub struct SlackCommandResponse {
+    pub blocks: Vec<Block>,
+}
+
+impl Default for SlackCommandResponse {
+    fn default() -> Self {
+        SlackCommandResponse {
+            blocks: vec![
+                Block::Header(Header::new("Ich komme am: ")),
+                Block::Actions(Actions {
+                    elements: vec![
+                        Button::new("😩 MO", "Montag"),
+                        Button::new("🫡 DI", "Dienstag"),
+                        Button::new("⛰️ MI", "Mittwoch"),
+                        Button::new("🍻 DO", "Donnerstag"),
+                        Button::new("🍾 FR", "Freitag"),
+                    ],
+                }),
+                Block::Divider(Divider {}),
+                Block::Header(Header::new("Und hier das amtliche Wahlergebnis: ")),
+                Block::Context(MarkdownText::new_context(
+                    vec!["*Montag*:", " ... niemand"],
+                    "presence-montag",
+                )),
+                Block::Context(MarkdownText::new_context(
+                    vec!["*Dienstag*:", "... niemand"],
+                    "presence-dienstag",
+                )),
+                Block::Context(MarkdownText::new_context(
+                    vec!["*Mittwoch*:", "... niemand"],
+                    "presence-mittwoch",
+                )),
+                Block::Context(MarkdownText::new_context(
+                    vec!["*Donnerstag*:", "... niemand"],
+                    "presence-donnerstag",
+                )),
+                Block::Context(MarkdownText::new_context(
+                    vec!["*Freitag*:", "... niemand"],
+                    "presence-freitag",
+                )),
+            ],
+        }
+    }
 }

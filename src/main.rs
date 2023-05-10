@@ -1,66 +1,33 @@
 use rocket::form::{Form, FromForm};
 use rocket::http::Status;
-use rocket::request::{FromRequest, Outcome};
-use rocket::response::content::RawJson;
+
 use rocket::response::status::Custom;
 use rocket::serde::json::serde_json::json;
 use rocket::serde::json::Json;
 use rocket::serde::{json, Deserialize, Serialize};
-use rocket::{post, routes, Request};
+use rocket::{post, routes};
 use slackwesend::wkw_action_handler::{
-    Actions, Block, Button, Context, Divider, Header, MarkdownText, SlackActionPayload, Text,
+    Actions, Block, Button, Divider, Header, MarkdownText, SlackActionPayload,
 };
-use slackwesend::wkw_command::SlackCommandBody;
-use tokio::task::spawn_blocking;
-use tracing::{error, info};
+use slackwesend::wkw_command::{SlackCommandBody, SlackCommandResponse};
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
-#[serde(tag = "response_type")]
-#[serde(rename = "in_channel")]
-struct SlackCommandResponse {
-    blocks: Vec<Block>,
-}
+use tracing::{error, info};
 
 #[post("/init", data = "<data>")]
 async fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
     let response_txt = format!("{:?}", data);
     info!("{:?}", response_txt);
 
-    let response = SlackCommandResponse {
-        blocks: vec![
-            Block::Header(Header::new("Ich komme am: ")),
-            Block::Actions(Actions {
-                elements: vec![
-                    Button::new("😩 MO", "Montag"),
-                    Button::new("🫡 DI", "Dienstag"),
-                    Button::new("⛰️ MI", "Mittwoch"),
-                    Button::new("🍻 DO", "Donnerstag"),
-                    Button::new("🍾 FR", "Freitag"),
-                ],
-            }),
-            Block::Divider(Divider {}),
-            Block::Header(Header::new("Und hier das amtliche Wahlergebnis: ")),
-            Block::Context(MarkdownText::new("*Montag*: ", "montag-presence")),
-            Block::Context(MarkdownText::new("*Dienstag*: ", "dienstag-presence")),
-            Block::Context(MarkdownText::new("*Mittwoch*: ", "mittwoch-presence")),
-            Block::Context(MarkdownText::new("*Donnerstag*: ", "donnerstag-presence")),
-            Block::Context(MarkdownText::new("*Freitag*: ", "freitag-presence")),
-        ],
-    };
+    let response = SlackCommandResponse::default();
 
     Json(response)
 }
 
-#[post("/<_..>", data = "<payload>")]
+#[post("/", data = "<payload>")]
 async fn handle_action(payload: Form<String>) -> Custom<String> {
-    info!("catch all called");
-    let response_txt = format!("Body:\n\n{:?}", &payload);
-    info!("{}", response_txt);
-
     match json::from_str(&payload) {
         Ok(payload) => {
-            info!("payload:\n{:?}", json::to_string(&payload).unwrap());
+            info!("payload:\n{}", json::to_pretty_string(&payload).unwrap());
 
             let SlackActionPayload {
                 user,
@@ -70,7 +37,7 @@ async fn handle_action(payload: Form<String>) -> Custom<String> {
                 ..
             } = payload;
 
-            spawn_blocking(move || {
+            tokio::task::spawn_blocking(move || {
                 let json_value = json!(
                     {
                         "response_type": "in_channel",
