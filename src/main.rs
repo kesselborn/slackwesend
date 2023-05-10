@@ -3,58 +3,142 @@ use rocket::http::Status;
 
 use rocket::response::status::Custom;
 use rocket::serde::json::serde_json::json;
-use rocket::serde::json::Json;
+use rocket::serde::json::{serde_json, Json};
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket::{post, routes};
-use slackwesend::wkw_action_handler::{
-    SlackActionPayload,
-};
+use slackwesend::wkw_action_handler::{Blocks, SlackActionPayload, User};
 use slackwesend::wkw_command::{SlackCommandBody, SlackCommandResponse};
 
-use tracing::{error, info};
+use tracing::{debug, error, info};
 
 #[post("/init", data = "<data>")]
 async fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
-    let response_txt = format!("{:?}", data);
-    info!("{:?}", response_txt);
+    let data = (*data).clone();
+    debug!(
+        "received the following data on /init:\n{}",
+        json::to_pretty_string(&data).unwrap()
+    );
 
+    info!(
+        "/werkommtwann was triggered from {} by {}",
+        data.channel_name, data.user_name
+    );
     let response = SlackCommandResponse::default();
 
     Json(response)
+}
+
+fn xxx(username: &str, weekday: &str) -> String {
+    format!("Bähm: {username} kommt am {weekday} ins Büro");
 }
 
 #[post("/", data = "<payload>")]
 async fn handle_action(payload: Form<String>) -> Custom<String> {
     match json::from_str(&payload) {
         Ok(payload) => {
-            info!("payload:\n{}", json::to_pretty_string(&payload).unwrap());
+            debug!(
+                "received the following data on /:\n{}",
+                json::to_pretty_string(&payload).unwrap()
+            );
 
             let SlackActionPayload {
                 user,
                 response_url,
                 message,
                 actions,
+                ref channel,
                 ..
             } = payload;
 
+            let User {
+                username,
+                id: user_id,
+                ..
+            } = user;
+
+            let weekday = actions[0].value.clone();
+
+            info!("{username} just said in channel {} that they were going to the office on {weekday}", channel.name);
+
             tokio::task::spawn_blocking(move || {
+                // the actions value is the day of the week the user clicked
+
+                let mut blocks = Blocks(message.blocks);
+                let mut presence_context = blocks.find_context(&actions[0].action_id);
+
+                debug!("presence context: {:?}", &presence_context);
+
+                let mut user_only_message = "mmm ... something wasn't right".to_string();
+                let mut public_thread_message = "mmm ... something wasn't right".to_string();
+
+                if let Some(ref mut context) = presence_context {
+                    let userlist_markdown_element = &mut context.elements[1];
+                    let mut users = userlist_markdown_element.extract_usernames();
+
+                    debug!("current users: {users:?}");
+
+                    // slack replaces usernames by user_ids in the markdown, so lets check for
+                    // username and user_id
+                    if users.contains(&user_id.as_ref()) {
+                        // user is already signed up for that day ... so: remove them again
+                        debug!("user {username} removed themself from {weekday} (they were already signed up for {weekday}");
+                        users.retain(|current_username| *current_username != user_id);
+
+                        user_only_message = format!(
+                            "völlig daneben, dass du am {weekday} jetzt doch nicht kommst!"
+                        );
+                        public_thread_message = format!("pfff ... {username} hat es sich anders überlegt und kommt am {weekday} doch nicht ins Büro!");
+                    } else {
+                        info!("user not found");
+                        user_only_message = format!("cool, dass du am {weekday} kommst");
+                        public_thread_message =
+                            format!("Bähm: {username} kommt am {weekday} ins Büro");
+                        users.push(&user_id)
+                    }
+
+                    let users = users
+                        .iter()
+                        .map(|user| format!("<@{}>", user))
+                        .collect::<Vec<_>>();
+
+                    // each context has two markdown elements: the first one shows the weekday and
+                    // the second one shows the users that will be present during that weekday
+                    // that's the element we need to adjust
+                    if users.is_empty() {
+                        userlist_markdown_element.text = "niemand".to_string();
+                    } else {
+                        userlist_markdown_element.text = users.join(", ");
+                    }
+                }
+
+                let updated_message = SlackCommandResponse {
+                    replace_original: Some(true),
+                    blocks: blocks.0,
+                };
+
+                debug!(
+                    "sending update:\n{}",
+                    serde_json::to_string_pretty(&updated_message).unwrap()
+                );
+                let client = reqwest::blocking::Client::new();
+                let _ = client.post(&response_url).json(&updated_message).send();
+
                 let json_value = json!(
                     {
                         "response_type": "in_channel",
                         "replace_original": false,
                         "thread_ts": message.ts,
-                        "text": format!("Ha! <@{}> kommt {} ins Büro", user.username, actions[0].value)
+                        "text": public_thread_message
                     }
                 );
 
                 info!("sending {} reply to {}", &json_value, response_url);
-                let client = reqwest::blocking::Client::new();
                 let _ = client.post(&response_url).json(&json_value).send();
                 let json_value = json!(
                     {
                         "response_type": "ephemeral",
                         "replace_original": false,
-                        "text": format!("Mega, dass du am {} kommst 🥰", actions[0].value)
+                        "text": user_only_message
                     }
                 );
                 info!("sending {} reply to {}", &json_value, response_url);

@@ -48,7 +48,7 @@ pub struct Team {
     pub domain: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Channel {
     pub id: String,
@@ -190,10 +190,10 @@ pub struct State {
     pub values: serde_json::Value,
 }
 
-struct Blocks(Vec<Block>);
+pub struct Blocks(pub Vec<Block>);
 
 impl Blocks {
-    fn find_context(&mut self, name: &str) -> Option<&mut Context> {
+    pub fn find_context(&mut self, name: &str) -> Option<&mut Context> {
         for block in &mut self.0 {
             if let Block::Context(ref mut context) = block {
                 if context.block_id == name {
@@ -208,7 +208,7 @@ impl Blocks {
 #[cfg(test)]
 mod tests {
     use crate::wkw_command::SlackCommandResponse;
-    
+
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
@@ -225,7 +225,7 @@ mod tests {
     fn find_correct_markdown_element() {
         let new_text = "foobar3000";
 
-        let SlackCommandResponse { blocks } = SlackCommandResponse::default();
+        let SlackCommandResponse { blocks, .. } = SlackCommandResponse::default();
         if let Some(Block::Context(Context { elements, .. })) = blocks.get(6) {
             assert_ne!(elements[1].text, new_text)
         } else {
