@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use rocket::form::{Form, FromForm};
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome};
@@ -15,34 +13,6 @@ use slackwesend::wkw_action_handler::{
 use slackwesend::wkw_command::SlackCommandBody;
 use tokio::task::spawn_blocking;
 use tracing::{error, info};
-
-struct Headers(String);
-
-impl Deref for Headers {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for Headers {
-    type Error = String;
-
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        // None => Outcome::Failure((Status::BadRequest, ApiKeyError::Missing)),
-        let x: Vec<String> = req
-            .headers()
-            .clone()
-            .into_iter()
-            .map(|header| header.to_string())
-            .chain(Some(req.uri().path().to_string()))
-            .collect();
-
-        Outcome::Success(Headers(x.join("\n")))
-    }
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -83,9 +53,9 @@ async fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
 }
 
 #[post("/<_..>", data = "<payload>")]
-async fn catch_all(headers: Headers, payload: Form<String>) -> Custom<String> {
+async fn handle_action(payload: Form<String>) -> Custom<String> {
     info!("catch all called");
-    let response_txt = format!("{}\nBody:\n\n{:?}", headers.clone(), &payload);
+    let response_txt = format!("Body:\n\n{:?}", &payload);
     info!("{}", response_txt);
 
     match json::from_str(&payload) {
@@ -134,7 +104,7 @@ async fn catch_all(headers: Headers, payload: Form<String>) -> Custom<String> {
 
 #[shuttle_runtime::main]
 async fn rocket() -> shuttle_rocket::ShuttleRocket {
-    let rocket = rocket::build().mount("/", routes![init, catch_all]);
+    let rocket = rocket::build().mount("/", routes![init, handle_action]);
 
     Ok(rocket.into())
 }
