@@ -86,6 +86,17 @@ pub struct Header {
     pub text: Text,
 }
 
+impl Header {
+    pub fn new(text: &str) -> Self {
+        Header {
+            text: Text {
+                text: text.to_string(),
+                emoji: true,
+            },
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Actions {
@@ -117,6 +128,21 @@ pub struct Button {
     pub action_ts: Option<String>,
 }
 
+impl Button {
+    pub fn new(label: &str, value: &str) -> Self {
+        Button {
+            text: Text {
+                text: label.to_string(),
+                emoji: true,
+            },
+            value: value.to_string(),
+            action_id: value.to_lowercase().to_string(),
+            block_id: None,
+            action_ts: None,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 #[serde(tag = "type")]
@@ -132,6 +158,17 @@ pub struct Text {
 #[serde(rename = "mrkdwn")]
 pub struct MarkdownText {
     pub text: String,
+}
+
+impl MarkdownText {
+    pub fn new(markdown_text: &str, id: &str) -> Context {
+        Context {
+            elements: vec![MarkdownText {
+                text: markdown_text.to_string(),
+            }],
+            block_id: id.to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]

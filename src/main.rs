@@ -59,97 +59,23 @@ async fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
 
     let response = SlackCommandResponse {
         blocks: vec![
-            Block::Header(Header {
-                text: Text {
-                    text: "Ich komme am:".to_string(),
-                    emoji: true,
-                },
-            }),
+            Block::Header(Header::new("Ich komme am: ")),
             Block::Actions(Actions {
                 elements: vec![
-                    Button {
-                        text: Text {
-                            text: "😩 MO".to_string(),
-                            emoji: true,
-                        },
-                        value: "Montag".to_string(),
-                        action_id: "monday".to_string(),
-                        block_id: None,
-                        action_ts: None,
-                    },
-                    Button {
-                        text: Text {
-                            text: "🫡 DI".to_string(),
-                            emoji: true,
-                        },
-                        value: "Dienstag".to_string(),
-                        action_id: "tuesday".to_string(),
-                        block_id: None,
-                        action_ts: None,
-                    },
-                    Button {
-                        text: Text {
-                            text: "⛰️ MI".to_string(),
-                            emoji: true,
-                        },
-                        value: "Mittwoch".to_string(),
-                        action_id: "wednesday".to_string(),
-                        block_id: None,
-                        action_ts: None,
-                    },
-                    Button {
-                        text: Text {
-                            text: "🍻 DO".to_string(),
-                            emoji: true,
-                        },
-                        value: "Donnerstag".to_string(),
-                        action_id: "thursday".to_string(),
-                        block_id: None,
-                        action_ts: None,
-                    },
-                    Button {
-                        text: Text {
-                            text: "🍾 FR".to_string(),
-                            emoji: true,
-                        },
-                        value: "Freitag".to_string(),
-                        action_id: "friday".to_string(),
-                        block_id: None,
-                        action_ts: None,
-                    },
+                    Button::new("😩 MO", "Montag"),
+                    Button::new("🫡 DI", "Dienstag"),
+                    Button::new("⛰️ MI", "Mittwoch"),
+                    Button::new("🍻 DO", "Donnerstag"),
+                    Button::new("🍾 FR", "Freitag"),
                 ],
             }),
             Block::Divider(Divider {}),
-            Block::Context(Context {
-                block_id: "Montag".to_string(),
-                elements: vec![MarkdownText {
-                    text: "*Montag*: ".to_string(),
-                }],
-            }),
-            Block::Context(Context {
-                block_id: "Dienstag".to_string(),
-                elements: vec![MarkdownText {
-                    text: "*Dienstag*: ".to_string(),
-                }],
-            }),
-            Block::Context(Context {
-                block_id: "Mittwoch".to_string(),
-                elements: vec![MarkdownText {
-                    text: "*Mittwoch*: ".to_string(),
-                }],
-            }),
-            Block::Context(Context {
-                block_id: "Donnerstag".to_string(),
-                elements: vec![MarkdownText {
-                    text: "*Donnerstag*: ".to_string(),
-                }],
-            }),
-            Block::Context(Context {
-                block_id: "Freitag".to_string(),
-                elements: vec![MarkdownText {
-                    text: "*Freitag*: ".to_string(),
-                }],
-            }),
+            Block::Header(Header::new("Und hier das amtliche Wahlergebnis: ")),
+            Block::Context(MarkdownText::new("*Montag*: ", "montag-presence")),
+            Block::Context(MarkdownText::new("*Dienstag*: ", "dienstag-presence")),
+            Block::Context(MarkdownText::new("*Mittwoch*: ", "mittwoch-presence")),
+            Block::Context(MarkdownText::new("*Donnerstag*: ", "donnerstag-presence")),
+            Block::Context(MarkdownText::new("*Freitag*: ", "freitag-presence")),
         ],
     };
 
