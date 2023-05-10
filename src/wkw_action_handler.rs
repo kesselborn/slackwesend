@@ -208,6 +208,7 @@ impl Blocks {
 #[cfg(test)]
 mod tests {
     use crate::wkw_command::SlackCommandResponse;
+    
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
@@ -222,16 +223,31 @@ mod tests {
 
     #[test]
     fn find_correct_markdown_element() {
-        let SlackCommandResponse { blocks } = SlackCommandResponse::default();
-        let mut blocks = Blocks(blocks);
-        let mut presence_mittwoch_context = blocks.find_context("presence-mittwoch");
+        let new_text = "foobar3000";
 
-        if let Some(context) = &presence_mittwoch_context {
-            let mut xxx = context.elements[1];
-            xxx.text = "boom".to_string();
+        let SlackCommandResponse { blocks } = SlackCommandResponse::default();
+        if let Some(Block::Context(Context { elements, .. })) = blocks.get(6) {
+            assert_ne!(elements[1].text, new_text)
+        } else {
+            unreachable!("did the main structure change? two markdown elements here")
         }
 
-        println!("{:?}", presence_mittwoch_context);
-        assert!(presence_mittwoch_context.is_some())
+        let mut blocks = Blocks(blocks);
+        {
+            let mut presence_mittwoch_context = blocks.find_context("presence-mittwoch");
+
+            if let Some(ref mut context) = presence_mittwoch_context {
+                context.elements[1].text = new_text.to_string()
+            }
+
+            assert!(presence_mittwoch_context.is_some())
+        }
+        let blocks = blocks.0;
+
+        if let Some(Block::Context(Context { elements, .. })) = blocks.get(6) {
+            assert_eq!(elements[1].text, new_text)
+        } else {
+            unreachable!("did the main structure change? two markdown elements here")
+        }
     }
 }
