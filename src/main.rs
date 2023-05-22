@@ -6,9 +6,11 @@ use rocket::serde::json::serde_json::json;
 use rocket::serde::json::{serde_json, Json};
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket::{post, routes};
+use slackwesend::random_messages::user_comes_announcement::user_comes_announcement;
 use slackwesend::wkw_action_handler::{Blocks, SlackActionPayload, User};
 use slackwesend::wkw_command::{SlackCommandBody, SlackCommandResponse};
 
+use slackwesend::random_messages::user_does_not_come_announcement::user_does_not_come_announcement;
 use tracing::{debug, error, info};
 
 #[post("/init", data = "<data>")]
@@ -26,10 +28,6 @@ async fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
     let response = SlackCommandResponse::default();
 
     Json(response)
-}
-
-fn xxx(username: &str, weekday: &str) -> String {
-    format!("Bähm: {username} kommt am {weekday} ins Büro");
 }
 
 #[post("/", data = "<payload>")]
@@ -58,7 +56,7 @@ async fn handle_action(payload: Form<String>) -> Custom<String> {
 
             let weekday = actions[0].value.clone();
 
-            info!("{username} just said in channel {} that they were going to the office on {weekday}", channel.name);
+            info!("'{username}' just said in channel '#{}' that they were going to the office on '{weekday}'", channel.name);
 
             tokio::task::spawn_blocking(move || {
                 // the actions value is the day of the week the user clicked
@@ -75,27 +73,28 @@ async fn handle_action(payload: Form<String>) -> Custom<String> {
                     let userlist_markdown_element = &mut context.elements[1];
                     let mut users = userlist_markdown_element.extract_usernames();
 
-                    debug!("current users: {users:?}");
+                    debug!("current users for {weekday}: {users:?}");
 
                     // slack replaces usernames by user_ids in the markdown, so lets check for
                     // username and user_id
                     if users.contains(&user_id.as_ref()) {
                         // user is already signed up for that day ... so: remove them again
-                        debug!("user {username} removed themself from {weekday} (they were already signed up for {weekday}");
+                        debug!("user '{username}' removed themself from '{weekday}' (they were already signed up for '{weekday}')");
                         users.retain(|current_username| *current_username != user_id);
 
+                        public_thread_message =
+                            user_does_not_come_announcement(&username, &weekday);
                         user_only_message = format!(
                             "völlig daneben, dass du am {weekday} jetzt doch nicht kommst!"
                         );
-                        public_thread_message = format!("pfff ... {username} hat es sich anders überlegt und kommt am {weekday} doch nicht ins Büro!");
                     } else {
                         info!("user not found");
                         user_only_message = format!("cool, dass du am {weekday} kommst");
-                        public_thread_message =
-                            format!("Bähm: {username} kommt am {weekday} ins Büro");
+                        public_thread_message = user_comes_announcement(&username, &weekday);
                         users.push(&user_id)
                     }
 
+                    debug!("new users for {weekday}: {users:?}");
                     let users = users
                         .iter()
                         .map(|user| format!("<@{}>", user))

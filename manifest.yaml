@@ -1,0 +1,23 @@
+display_information:
+  name: "WKW"
+features:
+  bot_user:
+    display_name: "WKW -- Wer Kommt Wann"
+    always_online: false
+  slash_commands:
+    - command: /werkommtwann
+      url: https://slackwesend.shuttleapp.rs/init
+      description: startet eine Anfrage, wer wann ins Büro kommt
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - commands
+settings:
+  interactivity:
+    is_enabled: true
+    request_url: https://slackwesend.shuttleapp.rs
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
+
