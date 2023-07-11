@@ -1,0 +1,9 @@
+**/.*.rustfmt
+**/.DS_Store
+/.dockerignore
+/.gitignore
+/.idea
+/.git
+/Dockerfile
+/lambda-artifacts
+/target

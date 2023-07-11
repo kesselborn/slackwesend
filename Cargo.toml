@@ -3,8 +3,13 @@ name = "slackwesend"
 version = "0.1.0"
 edition = "2021"
 publish = false
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+# Defines a feature named `webp` that does not enable any other features.
+lambda = []
 
 [dependencies]
 tide = "0.16"
