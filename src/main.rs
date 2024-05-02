@@ -7,10 +7,12 @@ use rocket::serde::json::{serde_json, Json};
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket::{post, routes};
 use slackwesend::random_messages::user_comes_announcement::user_comes_announcement;
+use slackwesend::random_messages::user_comes_user_message::user_comes_user_message;
+use slackwesend::random_messages::user_does_not_come_announcement::user_does_not_come_announcement;
+use slackwesend::random_messages::user_does_not_come_user_message::user_does_not_come_user_message;
 use slackwesend::wkw_action_handler::{Blocks, SlackActionPayload, User};
 use slackwesend::wkw_command::{SlackCommandBody, SlackCommandResponse};
 
-use slackwesend::random_messages::user_does_not_come_announcement::user_does_not_come_announcement;
 use tracing::{debug, error, info};
 
 #[post("/init", data = "<data>")]
@@ -84,12 +86,10 @@ async fn handle_action(payload: Form<String>) -> Custom<String> {
 
                         public_thread_message =
                             user_does_not_come_announcement(&username, &weekday);
-                        user_only_message = format!(
-                            "völlig daneben, dass du am {weekday} jetzt doch nicht kommst!"
-                        );
+                        user_only_message = user_does_not_come_user_message(&weekday);
                     } else {
                         info!("user not found");
-                        user_only_message = format!("cool, dass du am {weekday} kommst");
+                        user_only_message = user_comes_user_message(&weekday);
                         public_thread_message = user_comes_announcement(&username, &weekday);
                         users.push(&user_id)
                     }

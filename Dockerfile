@@ -1,4 +1,4 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:2 as rust_builder_image
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023 as rust_builder_image
 WORKDIR /app
 ENV PATH=/root/.cargo/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV BIN=slackwesend

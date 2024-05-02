@@ -47,7 +47,6 @@ pub fn user_comes_announcement(username: &str, weekday: &str) -> String {
 "🤩 Wir können es kaum erwarten, {username} diesen {weekday} im Büro zu begrüßen!",
 
 // announce auf 50 verschiedene arten, dass {username} am {weekday} ins büro kommt und feier das ab. du kannst auch emojis nutzen. ersetze {username} durch {username} und {weekday} durch {weekday}. Variiere auch die emojiis und die anzahl der emojis die du nutzt. die sprache ist deutsch. schreibe sehr formell
-
 "Wir haben die erfreuliche Nachricht erhalten, dass {username} am {weekday} ins Büro kommen wird!",
 "Es freut uns sehr mitteilen zu können, dass {username} am {weekday} den Weg ins Büro finden wird.",
 "Mit großer Freude möchten wir bekanntgeben, dass {username} uns am {weekday} im Büro besuchen wird.",
@@ -151,12 +150,74 @@ pub fn user_comes_announcement(username: &str, weekday: &str) -> String {
 "🎊🎊🎊",
 "Macht euch bereit, meine Lieben! Am {weekday} wird {username} ins Büro zurückkehren und wir freuen uns auf ein Wiedersehen! Lasst uns zusammen feiern und die Freude teilen!",
 "🥳🥳🥳",
-"Guten Tag, liebe Kollegen und Kolleginnen! Am {weekday} wird {username} ins Büro zurückkehren und wir sind bereit für einen gebührenden Empfant! Kommt alle und feiert mit uns!",
+"Guten Tag, liebe Kollegen und Kolleginnen! Am {weekday} wird {username} ins Büro zurückkehren und wir sind bereit für einen gebührenden Empfang! Kommt alle und feiert mit uns!",
 "🎉🎉🎉",
 "Hört, hört! Am {weekday} wird {username} ins Büro zurückkehren und wir können es kaum erwarten! Seid dabei und lasst uns gemeinsam feiern!",
 "🎊🎊🎊",
 "Hallo, Hallo, Hallo! Am {weekday} wird {username} das Büro wieder mit seiner Anwesenheit beehren und wir sind mehr als bereit! Kommt alle und feiert mit uns!",
-"🥳"];
+
+
+// gpt4:
+// 
+// ich schreibe ein Programm, in dem Nutzer sagen können, ob sie einen bestimmten Tag ins Büro kommen oder nicht. Jedes mal wenn ein Nutzer ins Büro kommt, möchte ich eine Announcement-Nachricht schreiben. Diese soll jeweils den Wochentag und den Namen enthalten. Wochentag wird durch die Variable {weekday} und der Name durch die Variable {username} dargestellt. Ein paar Beispiele:
+// "Es wird ein großartiger {weekday}, denn {username} wird im Büro sein! 😃",
+// "Wir haben Grund zum Feiern, denn {username} kehrt am {weekday} ins Büro zurück! 🎉👍🏼",
+// "Wir freuen uns, {username} am {weekday} im Büro zu begrüßen! 🙌🏼",
+// "Willkommen zurück, {username}! Wir sind begeistert, ihn am {weekday} im Büro zu sehen. 🤗",
+// "Wir können es kaum erwarten, {username} am {weekday} im Büro zu begrüßen! 🎊",
+//  Es ist ein json array, also nummeriere nicht durch und mache ans Ende der Zeile ein Komma. Nutze noch mehr Memes und Geek humor
+
+
+    "{username} hat am {weekday} im Büro entschieden zu erscheinen. May the Force be with us! 🌌",
+    "It’s a bird! It’s a plane! Nein, es ist {username}, der am {weekday} ins Büro kommt! 🦸",
+    "Bereit für eine Explosion an Produktivität? {username} kommt am {weekday} ins Büro! 💥",
+    "Alert! {username} wird am {weekday} Teil unserer Realität sein. Brace yourselves! 🌍",
+    "{username} betritt am {weekday} das Büro. Bereite dein bestes Meme vor! 🐸",
+    "Holt die Kuchen raus, denn {username} feiert am {weekday} sein Büro-Comeback! 🍰",
+    "Ein wildes {username} erscheint am {weekday} im Büro! Schnapp sie dir! 🎮",
+    "Hoch die Tassen! {username} ist am {weekday} wieder da und der Kaffee steht schon bereit. ☕️🎉",
+    "Das Büro wird am {weekday} durch {username} um 42% cooler. 🚀",
+    "Am {weekday} erwarten wir {username} im Büro. This is where the fun begins! 🎬",
+    "Einmal {username} am {weekday} to go, bitte! 🍔",
+    "Am {weekday} wird {username} uns mit seiner Anwesenheit im Büro beehren. Get your geek on! 🤓",
+    "Wen kümmert’s, wer am {weekday} im Büro ist? Wir, weil {username} kommt! 🌟",
+    "Am {weekday} wird {username} im Büro erwartet. Keep calm and welcome on! 👑",
+    "Die Kaffeemaschine am {weekday}: {username} kommt ins Büro. Bereite dich auf Überstunden vor! ☕️🤣",
+    "Ist es ein Vogel? Ist es ein Flugzeug? Nein, es ist {username}, der am {weekday} im Büro landet! ✈️🦸",
+    "{username} + {weekday} = Epic Office Time 🌐",
+    "{username} beamt sich am {weekday} ins Büro. Energize! 🌟🛸",
+    "Vorbereitung auf den {weekday}: {username} kommt ins Büro und bringt den Schwung mit! 🌪️",
+    "Am {weekday} wird {username} erwartet. Adjust your humor sensors! 😂",
+    "Alert Level {weekday}: {username} is in the office. Expect brilliance! 💡",
+    "Am {weekday} haben wir {username} im Büro. Bereitet die Memes vor! 🎭",
+    "{username} macht am {weekday} das Büro unsicher. Hide your snacks! 🍿",
+    "Fakten: {weekday} wird besser, weil {username} kommt. 📈",
+    "Sicherheitswarnung: {username} betritt am {weekday} das Büro. 😲",
+    "{username} am {weekday} im Büro. Bereit für das Chaos? 🌀",
+    "Newsflash: {username} wird am {weekday} das Büro rocken! 🎸",
+    "Bewegt euch, {username} kommt am {weekday} ins Büro. 🏃💨",
+    "Am {weekday} wird {username} im Büro sein, also stell den Kaffee bereit! ☕️",
+    "Achtung: {username} landet am {weekday} im Büro. Bereitet die Landebahn vor! 🛬",
+    "Oh nein, {username} kommt am {weekday} ins Büro. Alle Mann in Deckung! 😅",
+    "Zählen Sie die Tage? {username} ist am {weekday} zurück! 📆",
+    "Am {weekday} wird das Büro durch {username} erhellt. Wie ein leuchtender Stern! ✨",
+    "Spezielle Lieferung am {weekday}: {username} kommt ins Büro! 📦",
+    "Who you gonna call? {username}! Erwartet am {weekday} im Büro. 👻",
+    "Gönn dir eine Pause, denn {username} kümmert sich am {weekday} um alles! 🌴",
+    "Spoiler Alert: {username} wird am {weekday} im Büro sein und es wird legendär! 🎬🍿",
+    "Alert: {username} im Anflug auf das Büro am {weekday}. Safety not guaranteed! ⚠️",
+    "Wunder geschehen und {username} wird am {weekday} im Büro sein! 🦄",
+    "Bitte anschnallen: {username} startet am {weekday} durch im Büro! 🚀",
+    "Hinweis: Am {weekday} ist {username} im Büro. Bitte nicht füttern! 🚫🍪",
+    "Am {weekday} wird {username} das Büro betreten. Das wird ein Fest! 🎊",
+    "Schalte deinen Party-Modus ein, denn {username} kommt am {weekday} ins Büro! 🥳",
+    "Vorbereitung ist alles: {username} kommt am {weekday} ins Büro. Machen Sie sich bereit! 🏗️",
+    "Wir haben {username} am {weekday} im Büro und das ist kein Fake News! 📰",
+    "Rette sich wer kann! {username} kommt am {weekday} ins Büro! 🌪️",
+    "Eilmeldung: {username} wird am {weekday} im Büro sein. Jetzt wird’s ernst! 🚨",
+    "Am {weekday} bringt {username} das Büro zum Beben. Earthquake alert! 🌍"
+    ];
+
     let mut rng = rand::thread_rng();
     let random_sentence = sentences.choose(&mut rng).unwrap();
     let mut tt = TinyTemplate::new();
