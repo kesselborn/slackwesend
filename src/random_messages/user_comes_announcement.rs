@@ -233,7 +233,7 @@ pub fn user_comes_announcement(username: &str, weekday: &str) -> String {
         weekday: weekday.to_string(),
     };
 
-    tt.add_template("", &random_sentence).unwrap();
+    tt.add_template("", random_sentence).unwrap();
 
     match tt.render("", &data) {
         Ok(s) => s,

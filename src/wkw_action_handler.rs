@@ -137,7 +137,7 @@ impl Button {
                 emoji: true,
             },
             value: value.to_string(),
-            action_id: format!("presence-{}", value.to_lowercase().to_string()),
+            action_id: format!("presence-{}", value.to_lowercase()),
             block_id: None,
             action_ts: None,
         }
@@ -218,7 +218,7 @@ mod tests {
             MarkdownText::new_context(vec!["*Monday*:", "foo <@bar>, <@baz>, bang"], "foo");
 
         assert_eq!(elements[1].extract_usernames(), vec!["bar", "baz"]);
-        assert_eq!(elements[1].extract_usernames().contains(&"bar"), true);
+        assert!(elements[1].extract_usernames().contains(&"bar"));
     }
 
     #[test]

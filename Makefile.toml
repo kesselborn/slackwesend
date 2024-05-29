@@ -1,0 +1,20 @@
+[tasks.build-lambda]
+command = "docker"
+args = [
+  "build",
+  "--build-arg=BIN=${CARGO_MAKE_PROJECT_NAME}",
+  "--tag=${CARGO_MAKE_PROJECT_NAME}-lambda-artifact-builder",
+  "--output=type=local,dest=./lambda-artifact",
+  ".",
+]
+dependencies = ["build"]
+
+[tasks.build-iac]
+command = "cargo"
+args = ["build", "--bin=iac", "--release"]
+
+[tasks.deploy]
+command = "./target/release/iac"
+args = ["deploy"]
+
+dependencies = ["build-iac", "build-lambda"]
