@@ -2,12 +2,13 @@ use aws_config::SdkConfig;
 use clap::ValueEnum;
 use heck::ToUpperCamelCase;
 use serde::{Deserialize, Serialize};
-use tracing::info;
+use tracing::debug;
 
 #[derive(ValueEnum, Clone, Debug, Deserialize, Serialize)]
 pub enum State {
     On,
     Off,
+    Tail,
 }
 
 pub fn execution_role_name(name: &str, region: &str) -> String {
@@ -29,7 +30,7 @@ pub fn deduce_aws_region(aws_region: &Option<String>, config: &SdkConfig) -> Str
         );
     }
 
-    info!("aws region: {}", aws_region.as_ref().unwrap());
+    debug!("aws region: {}", aws_region.as_ref().unwrap());
 
     aws_region.unwrap()
 }

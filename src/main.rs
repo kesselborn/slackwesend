@@ -16,12 +16,9 @@ use rocket::serde::json::{serde_json, Json};
 use rocket::serde::{json, Deserialize, Serialize};
 use rocket::{post, routes};
 
-use wkw::random_messages::user_comes_announcement::user_comes_announcement;
-use wkw::random_messages::user_comes_user_message::user_comes_user_message;
-use wkw::random_messages::user_does_not_come_announcement::user_does_not_come_announcement;
-use wkw::random_messages::user_does_not_come_user_message::user_does_not_come_user_message;
 use wkw::wkw_action_handler::{Blocks, SlackActionPayload, User};
 use wkw::wkw_command::{SlackCommandBody, SlackCommandResponse};
+use wkw::wkw_event_listener::handle_url_verification;
 
 use tracing::{debug, error, info, Level};
 
@@ -44,6 +41,15 @@ async fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
 
 #[post("/", data = "<payload>")]
 async fn handle_action(payload: Form<String>) -> Custom<String> {
+    #[cfg(not(feature = "random_messages"))]
+    let random_messages = false;
+    #[cfg(feature = "random_messages")]
+    let random_messages = true;
+    #[cfg(not(feature = "direct_user_feedback"))]
+    let direct_user_feedback = false;
+    #[cfg(feature = "direct_user_feedback")]
+    let direct_user_feedback = true;
+
     debug!("████████████████████████████████████████████████████████████████████████████████████████████████████ new request");
     match json::from_str(&payload) {
         Ok(payload) => {
@@ -67,19 +73,17 @@ async fn handle_action(payload: Form<String>) -> Custom<String> {
                 ..
             } = user;
 
-            let weekday = actions[0].value.clone();
-
-            info!("'{username}' just said in channel '#{}' that they were going to the office on '{weekday}'", channel.name);
-
             // the actions value is the day of the week the user clicked
+            let weekday = actions[0].value.clone();
+            info!("'{username}' just said in channel '#{}' that they were going to the office on '{weekday}'", channel.name);
 
             let mut blocks = Blocks(message.blocks);
             let mut presence_context = blocks.find_context(&actions[0].action_id);
 
             debug!("presence context: {:?}", &presence_context);
 
-            let mut user_only_message = "mmm ... something wasn't right".to_string();
-            let mut public_thread_message = "mmm ... something wasn't right".to_string();
+            let mut user_only_message = None;
+            let mut public_thread_message = None;
 
             if let Some(ref mut context) = presence_context {
                 let userlist_markdown_element = &mut context.elements[1];
@@ -94,12 +98,48 @@ async fn handle_action(payload: Form<String>) -> Custom<String> {
                     debug!("user '{username}' removed themself from '{weekday}' (they were already signed up for '{weekday}')");
                     users.retain(|current_username| *current_username != user_id);
 
-                    public_thread_message = user_does_not_come_announcement(&username, &weekday);
-                    user_only_message = user_does_not_come_user_message(&weekday);
+                    public_thread_message = if random_messages {
+                        Some(wkw::random_messages::user_does_not_come_announcement::user_does_not_come_announcement(&username, &weekday))
+                    } else {
+                        Some(format!(
+                            "{} hat es sich anders überlegt und kommt am {} doch nicht ins Büro",
+                            &username, &weekday
+                        ))
+                    };
+
+                    user_only_message = if direct_user_feedback {
+                        if random_messages {
+                            Some(wkw::random_messages::user_does_not_come_user_message::user_does_not_come_user_message(&weekday))
+                        } else {
+                            Some(format!(
+                                "schade, dass du am {} doch nicht kommst!",
+                                &weekday
+                            ))
+                        }
+                    } else {
+                        None
+                    }
                 } else {
                     info!("user not found");
-                    user_only_message = user_comes_user_message(&weekday);
-                    public_thread_message = user_comes_announcement(&username, &weekday);
+                    user_only_message = if random_messages {
+                        Some(
+                            wkw::random_messages::user_comes_user_message::user_comes_user_message(
+                                &weekday,
+                            ),
+                        )
+                    } else {
+                        Some(format!("cool, dass du am {} kommst!", &weekday))
+                    };
+
+                    public_thread_message = if random_messages {
+                        Some(
+                            wkw::random_messages::user_comes_announcement::user_comes_announcement(
+                                &username, &weekday,
+                            ),
+                        )
+                    } else {
+                        Some(format!("{} kommt am {} ins Büro", &username, &weekday))
+                    };
                     users.push(&user_id)
                 }
 
@@ -173,32 +213,40 @@ async fn handle_action(payload: Form<String>) -> Custom<String> {
                 debug!("done sending thread response")
             };
 
-            let json_value = json!(
-                {
-                    "response_type": "ephemeral",
-                    "replace_original": false,
-                    "text": user_only_message
-                }
-            );
-            let direct_message_response = async {
-                debug!(
-                    "sending direct user message response {} reply to {}",
-                    &json_value, response_url
+            if direct_user_feedback {
+                let json_value = json!(
+                    {
+                        "response_type": "ephemeral",
+                        "replace_original": false,
+                        "text": user_only_message
+                    }
                 );
-                match client.post(&response_url).json(&json_value).send().await {
-                    Err(e) => error!("error sending direct message response: {}", e),
-                    Ok(res) => debug!(
-                        "response status: {}, body: {}",
-                        &res.status(),
-                        &res.text().await.unwrap_or("error getting body".to_string())
-                    ),
-                }
-                debug!("done sending direct user message response");
-            };
+                let direct_message_response = async {
+                    debug!(
+                        "sending direct user message response {} reply to {}",
+                        &json_value, response_url
+                    );
+                    match client.post(&response_url).json(&json_value).send().await {
+                        Err(e) => error!("error sending direct message response: {}", e),
+                        Ok(res) => debug!(
+                            "response status: {}, body: {}",
+                            &res.status(),
+                            &res.text().await.unwrap_or("error getting body".to_string())
+                        ),
+                    }
+                    debug!("done sending direct user message response");
+                };
 
-            // TODO: handle errors here
-            let (_update_response, _thread_response, _direct_message_response) =
-                join!(update_response, thread_response, direct_message_response);
+                // TODO: handle errors here
+                let (_update_response, _thread_response, _direct_message_response) =
+                    join!(update_response, thread_response, direct_message_response);
+            } else {
+                thread_response.await;
+                update_response.await;
+
+                // let (_update_response, _thread_response) = join!(update_response, thread_response);
+                // TODO: handle errors here
+            }
 
             Custom(Status::Ok, "".to_string())
         }
@@ -241,7 +289,10 @@ async fn main() -> anyhow::Result<()> {
 
     info!("listening on prefix {}", prefix);
     let rocket = rocket::build()
-        .mount(prefix, routes![init, handle_action])
+        .mount(
+            prefix,
+            routes![init, handle_action, handle_url_verification],
+        )
         // security by obscurity: just return a 503 for all other requests
         .register("/", catchers![default_catcher]);
     if is_running_on_lambda() {

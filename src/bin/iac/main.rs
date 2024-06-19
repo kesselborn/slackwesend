@@ -141,7 +141,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Destroy { force } => destroy::destroy(&name, aws_region, force).await?,
 
         Commands::Deploy { deploy_zip } => deploy::deploy(&name, aws_region, &deploy_zip).await?,
-        Commands::Log { state } => log::log(&name, state, aws_region).await?,
+        Commands::Log { state } => log::log(&name, state, aws_region, None).await?,
     }
 
     Ok(())

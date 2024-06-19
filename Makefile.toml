@@ -1,3 +1,17 @@
+[tasks.help]
+script = """
+cat<<EOF
+Usage:
+    cargo make [COMMAND]
+
+Commands:
+    run-locally    Build project and run it locally
+    build-lambda   Build the Lambda function artifacts.
+    deploy         Build and deploy the Lambda function artifacts.
+
+
+"""
+
 [tasks.build-lambda]
 command = "docker"
 args = [
@@ -18,3 +32,8 @@ command = "./target/release/iac"
 args = ["deploy"]
 
 dependencies = ["build-iac", "build-lambda"]
+
+[tasks.run]
+command = "./target/debug/wkw"
+
+dependencies = ["build"]
