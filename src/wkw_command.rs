@@ -1,6 +1,9 @@
 use crate::wkw_action_handler::{Actions, Block, Button, Divider, Header, MarkdownText};
+use rocket::form::Form;
+use rocket::serde::json::{self, Json};
 use rocket::serde::{Deserialize, Serialize};
-use rocket::FromForm;
+use rocket::{post, FromForm};
+use tracing::{debug, info};
 
 #[derive(Clone, Debug, FromForm, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -88,4 +91,21 @@ impl Default for SlackCommandResponse {
             ],
         }
     }
+}
+
+#[post("/init", data = "<data>")]
+pub fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
+    let data = (*data).clone();
+    debug!(
+        "received the following data on /init:\n{}",
+        json::to_string(&data).unwrap()
+    );
+
+    info!(
+        "/werkommtwann was triggered from {} by {}",
+        data.channel_name, data.user_name
+    );
+    let response = SlackCommandResponse::default();
+
+    Json(response)
 }

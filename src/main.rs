@@ -1,38 +1,15 @@
-use rocket::form::Form;
-use rocket::http::Status;
-use rocket::response::Redirect;
 use rocket::{catch, catchers, uri, FromForm, Request};
+use rocket::{http::Status, response::Redirect};
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tracing_subscriber::FmtSubscriber;
 
 use anyhow::Context;
 use lambda_web::{is_running_on_lambda, launch_rocket_on_lambda};
 
-use rocket::serde::json::Json;
-use rocket::serde::{json, Deserialize, Serialize};
-use rocket::{post, routes};
+use rocket::routes;
 
-use wkw::wkw_command::{SlackCommandBody, SlackCommandResponse};
-use wkw::wkw_event_listener::handle_url_verification;
-
-use tracing::{debug, info, Level};
-
-#[post("/init", data = "<data>")]
-fn init(data: Form<SlackCommandBody>) -> Json<SlackCommandResponse> {
-    let data = (*data).clone();
-    debug!(
-        "received the following data on /init:\n{}",
-        json::to_string(&data).unwrap()
-    );
-
-    info!(
-        "/werkommtwann was triggered from {} by {}",
-        data.channel_name, data.user_name
-    );
-    let response = SlackCommandResponse::default();
-
-    Json(response)
-}
+use tracing::{info, Level};
 
 #[catch(default)]
 fn default_catcher(_status: Status, _request: &Request) -> Redirect {
@@ -69,9 +46,9 @@ async fn main() -> anyhow::Result<()> {
         .mount(
             prefix,
             routes![
-                init,
+                wkw::wkw_command::init,
                 wkw::wkw_action_handler::handle_action,
-                handle_url_verification
+                wkw::wkw_event_listener::handle_url_verification
             ],
         )
         // security by obscurity: just return a 503 for all other requests
