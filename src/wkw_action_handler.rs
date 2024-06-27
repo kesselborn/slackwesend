@@ -67,7 +67,7 @@ pub struct Message {
     pub blocks: Vec<Block>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[serde(tag = "type")]
 pub enum Block {
@@ -81,7 +81,7 @@ pub enum Block {
     Context(Context),
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Header {
     pub text: Text,
@@ -98,24 +98,24 @@ impl Header {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Actions {
     pub elements: Vec<Button>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Divider {}
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Context {
     pub block_id: String,
     pub elements: Vec<MarkdownText>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[serde(tag = "type")]
 #[serde(rename = "button")]
@@ -144,7 +144,7 @@ impl Button {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[serde(tag = "type")]
 #[serde(rename = "plain_text")]
@@ -153,7 +153,7 @@ pub struct Text {
     pub emoji: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 #[serde(tag = "type")]
 #[serde(rename = "mrkdwn")]
@@ -190,6 +190,7 @@ pub struct State {
     pub values: serde_json::Value,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Blocks(pub Vec<Block>);
 
 impl Blocks {

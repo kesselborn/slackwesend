@@ -5,9 +5,11 @@ Usage:
     cargo make [COMMAND]
 
 Commands:
-    run-locally    Build project and run it locally
+    run            Build project and run it locally
     build-lambda   Build the Lambda function artifacts.
     deploy         Build and deploy the Lambda function artifacts.
+    deploy-beta    Build and deploy the Lambda function to wkw-beta app (need to initialize with wkw-beta first)
+    logs           Tail logs
 
 
 """
@@ -31,9 +33,17 @@ args = ["build", "--bin=iac", "--release"]
 command = "./target/release/iac"
 args = ["deploy"]
 
+[tasks.deploy-beta]
+command = "./target/release/iac"
+args = ["--name=wkw-beta", "deploy"]
+
 dependencies = ["build-iac", "build-lambda"]
 
 [tasks.run]
 command = "./target/debug/wkw"
-
 dependencies = ["build"]
+
+[tasks.log]
+command = "./target/release/iac"
+args = ["log", "tail"]
+dependencies = ["build-iac"]

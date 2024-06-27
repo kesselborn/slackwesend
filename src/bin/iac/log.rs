@@ -124,7 +124,7 @@ async fn tail_logs(
     log_group_name: &str,
     log_stream_name: &str,
 ) -> anyhow::Result<()> {
-    let mut next_token: Option<String> = None;
+    let mut next_token = "".to_string();
 
     let client = aws_sdk_cloudwatchlogs::Client::new(config);
 
@@ -133,6 +133,7 @@ async fn tail_logs(
             .get_log_events()
             .log_group_name(log_group_name)
             .log_stream_name(log_stream_name)
+            .next_token(&next_token)
             .start_from_head(true)
             .send()
             .await?;
@@ -149,11 +150,11 @@ async fn tail_logs(
         sleep(Duration::from_secs(1)).await;
 
         // Clone next_token for next iteration before the response object is dropped
-        next_token = response.next_forward_token().map(|s| s.to_owned());
-        if next_token.is_none() {
-            // Break if no new logs
+        let next_token_option = response.next_forward_token();
+        if next_token_option.is_none() {
             break;
         }
+        next_token = next_token_option.unwrap().to_string();
     }
 
     Ok(())
