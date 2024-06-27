@@ -18,42 +18,44 @@ pub struct UrlVerification {
 
 #[derive(Deserialize, Debug)]
 pub struct EventCallback {
-    token: String,
-    team_id: String,
-    api_app_id: String,
+    _token: String,
+    _team_id: String,
+    _api_app_id: String,
     event: Event,
-    event_id: String,
-    event_time: i64,
-    authed_users: Vec<String>,
+    _event_id: String,
+    _event_time: i64,
+    _authed_users: Vec<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
     #[serde(rename = "type")]
     event_type: String,
-    user: String,
-    text: String,
-    ts: String,
-    channel: String,
-    event_ts: String,
+    _user: String,
+    _text: String,
+    _ts: String,
+    _channel: String,
+    _event_ts: String,
 }
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for UrlVerification {
     type Error = ();
 
-    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+    async fn from_request(_request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         return Outcome::Forward(Status::BadRequest);
-        match request.guard::<UrlVerification>().await {
-            rocket::outcome::Outcome::Success(url_verification) => {
-                if url_verification.event_type.as_str() == "url_verification" {
-                    Outcome::Success(url_verification)
-                } else {
-                    Outcome::Forward(Status::BadRequest)
+        /*
+                match request.guard::<UrlVerification>().await {
+                    rocket::outcome::Outcome::Success(url_verification) => {
+                        if url_verification.event_type.as_str() == "url_verification" {
+                            Outcome::Success(url_verification)
+                        } else {
+                            Outcome::Forward(Status::BadRequest)
+                        }
+                    }
+                    _ => Outcome::Forward(Status::BadRequest),
                 }
-            }
-            _ => Outcome::Forward(Status::BadRequest),
-        }
+        */
     }
 }
 
