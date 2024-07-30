@@ -11,6 +11,7 @@ pub struct Config<'a> {
     pub(crate) deploy_zip: &'a str,
     pub(crate) endpoint: &'a str,
     pub(crate) function_arn: &'a str,
+    pub(crate) s3_bucket: &'a str,
 }
 
 impl<'a> Config<'a> {
@@ -29,6 +30,7 @@ impl<'a> Display for Config<'a> {
             deploy_zip,
             endpoint,
             function_arn,
+            s3_bucket,
         } = self;
 
         f.write_fmt(format_args!(
@@ -40,6 +42,7 @@ Deploy-Zip:          {deploy_zip}
 Handler:             {handler}
 Endpoint:            {endpoint}
 Function ARN:        {function_arn}
+S3 Bucket:           {s3_bucket}
         "#
         ))
     }

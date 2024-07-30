@@ -2,8 +2,6 @@ use clap::Parser;
 use common::State;
 use serde::{Deserialize, Serialize};
 
-const CONFIG_FILE_NAME: &str = ".config";
-
 use clap::Subcommand;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::FmtSubscriber;
@@ -19,10 +17,6 @@ mod setup;
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// where to persist the config
-    #[arg(short, long, default_value = CONFIG_FILE_NAME)]
-    config: String,
-
     #[command(subcommand)]
     cmd: Commands,
 
@@ -134,7 +128,7 @@ async fn main() -> anyhow::Result<()> {
                 &deploy_zip,
                 &handler,
                 force,
-                &args.config,
+                &format!(".{}.config", &name),
             )
             .await?;
         }

@@ -7,6 +7,7 @@ Usage:
 Commands:
     run            Build project and run it locally
     build-lambda   Build the Lambda function artifacts.
+    build-iac      Build infra as code binary
     deploy         Build and deploy the Lambda function artifacts.
     deploy-beta    Build and deploy the Lambda function to wkw-beta app (need to initialize with wkw-beta first)
     logs           Tail logs
